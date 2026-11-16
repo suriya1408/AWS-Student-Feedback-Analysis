@@ -1,0 +1,15 @@
+PROJECT: Cloud-Based Student Feedback Analysis System
+
+Student / Browser
+       |
+       v
+Flask Web Application (EC2)
+       |
+       +------> AWS Lambda: Sentiment Classification
+       |
+       +------> Amazon DynamoDB: Structured Feedback Records
+       |
+       +------> Amazon S3: JSON Feedback Archive
+
+Optional advanced extension:
+AWS Lambda -> SageMaker Runtime Endpoint -> ML sentiment prediction

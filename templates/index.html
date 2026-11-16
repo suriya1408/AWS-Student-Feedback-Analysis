@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud Feedback Analytics</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div><span class="brand-mark">☁</span> Cloud Feedback Analytics</div>
+    <span class="tag">AWS CLOUD PROJECT</span>
+  </header>
+  <main class="container">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">STUDENT FEEDBACK INTELLIGENCE</p>
+        <h1>Listen. Analyse. Improve.</h1>
+        <p class="sub">A cloud-ready application that collects feedback and classifies sentiment.</p>
+      </div>
+      <div class="hero-icon">✦</div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="alert {{ category }}">{{ message }}</div>
+      {% endfor %}
+    {% endwith %}
+
+    <section class="stats">
+      <div class="stat"><span>Total responses</span><strong>{{ total }}</strong></div>
+      <div class="stat positive"><span>Positive</span><strong>{{ counts.get('Positive', 0) }}</strong></div>
+      <div class="stat neutral"><span>Neutral</span><strong>{{ counts.get('Neutral', 0) }}</strong></div>
+      <div class="stat negative"><span>Negative</span><strong>{{ counts.get('Negative', 0) }}</strong></div>
+    </section>
+
+    <section class="content-grid">
+      <div class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">NEW RESPONSE</p><h2>Submit feedback</h2></div><span class="step">01</span></div>
+        <form method="POST">
+          <label for="student">Student name</label>
+          <input id="student" name="student" placeholder="Enter your name" required maxlength="80">
+          <label for="course">Course / subject</label>
+          <input id="course" name="course" placeholder="e.g. Cloud Computing" required maxlength="100">
+          <label for="feedback">Your feedback</label>
+          <textarea id="feedback" name="feedback" rows="5" placeholder="Share your learning experience..." required maxlength="1000"></textarea>
+          <button type="submit">Analyse and submit <span>→</span></button>
+        </form>
+        <p class="hint">Sentiment is classified as Positive, Neutral or Negative.</p>
+      </div>
+      <div class="panel">
+        <div class="panel-heading"><div><p class="eyebrow">LATEST RECORDS</p><h2>Feedback activity</h2></div><span class="step">02</span></div>
+        {% if records %}
+          <div class="records">
+          {% for item in records[:8] %}
+            <article class="record">
+              <div class="record-top"><strong>{{ item.get('student', 'Student') }}</strong><span class="pill {{ item.get('sentiment', 'Neutral')|lower }}">{{ item.get('sentiment', 'Neutral') }}</span></div>
+              <p class="course">{{ item.get('course', 'Course') }}</p>
+              <p class="feedback">{{ item.get('feedback', '') }}</p>
+              <small>{{ item.get('created_at', '')[:19].replace('T', ' ') }}</small>
+            </article>
+          {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty"><span>☁</span><strong>No feedback yet</strong><p>Submit the first response to see analytics here.</p></div>
+        {% endif %}
+      </div>
+    </section>
+    <footer>Built with Python Flask · AWS S3 · DynamoDB · Lambda · EC2</footer>
+  </main>
+</body>
+</html>
