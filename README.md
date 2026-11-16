@@ -1,94 +1,166 @@
-# Cloud-Based Student Feedback Analysis System (AWS)
+# Cloud-Based Student Feedback Analysis System Using AWS
 
-A small portfolio project for demonstrating a cloud-hosted feedback application. It accepts student feedback, classifies sentiment, and displays a dashboard.
+A portfolio project demonstrating a cloud-integrated student feedback application. The system collects student feedback, classifies its sentiment, and displays the results through a web-based dashboard using AWS services.
 
 ## Features
-- Flask web application and dashboard
-- Positive / Neutral / Negative sentiment classification
-- Local demo mode (works without AWS credentials)
-- AWS S3 JSON record upload
-- AWS DynamoDB record storage
-- AWS Lambda sentiment function
-- Designed to be hosted on an AWS EC2 Linux instance
-- Optional SageMaker endpoint integration can be added as an advanced extension
 
-## 1. Run locally in VS Code
+- Flask-based web application and dashboard.
+- Positive, Neutral, and Negative sentiment classification.
+- Local demo mode that works without AWS credentials.
+- Amazon S3 integration for JSON feedback archives.
+- Amazon DynamoDB integration for structured feedback storage.
+- AWS Lambda function for sentiment analysis.
+- CloudWatch integration for monitoring Lambda execution.
+- Designed for deployment on an AWS EC2 Linux instance.
+- Optional Amazon SageMaker integration as a future enhancement.
 
-Open this folder in VS Code. In the terminal:
+## Technologies Used
 
-### Windows PowerShell
+| Technology | Purpose |
+|---|---|
+| Python | Backend development |
+| Flask | Web application framework |
+| HTML and CSS | User interface |
+| AWS Lambda | Sentiment processing |
+| Amazon DynamoDB | Feedback data storage |
+| Amazon S3 | JSON archive storage |
+| Amazon CloudWatch | Execution monitoring |
+| Boto3 | AWS integration |
+
+## 1. Running the Project Locally
+
+### Prerequisites
+
+- Python installed on your system.
+- Git installed.
+- Visual Studio Code (recommended).
+
+### Setup Instructions
+
+Clone the repository:
+
+```bash
+git clone https://github.com/suriya1408/AWS-Student-Feedback-Analysis.git
+```
+
+Navigate to the project directory:
+
+```bash
+cd AWS-Student-Feedback-Analysis
+```
+
+Create a virtual environment:
+
+**Windows PowerShell**
+
 ```powershell
 py -m venv .venv
-.venv\\Scripts\\Activate.ps1
+.venv\Scripts\Activate.ps1
+```
+
+Install the required packages:
+
+```powershell
 pip install -r requirements.txt
+```
+
+Create your environment configuration file:
+
+```powershell
 Copy-Item .env.example .env
+```
+
+Configure the required environment variables and run the application:
+
+```powershell
 python app.py
 ```
 
-If PowerShell blocks activation, run:
+Open the application in your browser:
+
+`http://127.0.0.1:5000`
+
+If PowerShell blocks virtual environment activation, run:
+
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.venv\\Scripts\\Activate.ps1
+.venv\Scripts\Activate.ps1
 ```
 
-Open http://127.0.0.1:5000
+### Sample Feedback
 
-Submit a few sample feedback records:
-- "The class was excellent and very helpful"
-- "The explanation was unclear and boring"
-- "The course was okay"
+Try submitting the following feedback:
 
-The application stores demo records in `feedback_local.json`.
+- "The class was excellent and very helpful."
+- "The explanation was unclear and boring."
+- "The course was okay."
 
-## 2. Configure AWS
+In local demo mode, feedback records are stored in `feedback_local.json`.
 
-Create an AWS account only if you have permission and can monitor costs. Do not publish AWS access keys or commit them to GitHub.
+## 2. AWS Cloud Integration
 
-Create:
-1. An S3 bucket, for example `your-unique-feedback-bucket`
-2. A DynamoDB table named `StudentFeedback`, with partition key `feedback_id` (String)
-3. A Lambda function using `lambda_function.py` as its code, runtime Python 3.12, handler `lambda_function.lambda_handler`
+The application integrates multiple AWS services to support feedback processing and storage.
 
-Deploy Lambda:
-- Create a ZIP containing `lambda_function.py`
-- Upload it to Lambda
-- Set handler to `lambda_function.lambda_handler`
-- Copy the function name
+### AWS Services Used
 
-Configure `.env`:
+**Amazon S3**
+
+Stores JSON archives of submitted feedback.
+
+**Amazon DynamoDB**
+
+Maintains structured feedback records, including sentiment results.
+
+**AWS Lambda**
+
+Processes feedback and performs sentiment classification using predefined keyword-based rules.
+
+**Amazon CloudWatch**
+
+Records Lambda execution logs and helps monitor the serverless function.
+
+### AWS Configuration
+
+The project uses the following configuration:
+
+| Configuration | Value |
+|---|---|
+| AWS Region | `ap-southeast-2` |
+| DynamoDB Table | `StudentFeedback` |
+| Lambda Function | `student-feedback-sentiment` |
+| S3 Bucket | Configured using environment variables |
+
+### Environment Variables
+
+Configure the following values in your local `.env` file:
+
 ```env
-AWS_REGION=ap-south-1
+AWS_REGION=ap-southeast-2
 S3_BUCKET=your-unique-feedback-bucket
 DDB_TABLE=StudentFeedback
-LAMBDA_NAME=your-lambda-function-name
-FLASK_SECRET_KEY=use-a-long-random-value
+LAMBDA_NAME=student-feedback-sentiment
+FLASK_SECRET_KEY=your-long-random-secret
 ```
 
-Set up AWS credentials using an approved IAM role or AWS CLI profile. For local development, `aws configure` can set up a profile. Never paste credentials into source code.
+Replace the S3 bucket name with your actual bucket name.
 
-The identity used by the app needs:
-- `s3:PutObject` on the chosen bucket
-- `dynamodb:PutItem` and `dynamodb:Scan` on the table
-- `lambda:InvokeFunction` on the Lambda function
+### AWS Permissions
 
-For a real deployment, use least-privilege IAM policies and avoid public access to the S3 bucket.
+The application's AWS identity requires appropriate permissions for:
 
-## 3. AWS EC2 deployment (optional)
+- `s3:PutObject` – Uploading feedback archives.
+- `dynamodb:PutItem` – Storing feedback records.
+- `dynamodb:Scan` – Reading feedback records.
+- `lambda:InvokeFunction` – Invoking the sentiment analysis function.
 
-Launch a small Amazon Linux EC2 instance only if your account has access and you understand the charges. Attach an IAM role with the permissions above. Configure the security group to allow HTTP traffic only as needed. Connect using SSH, install Python and Git, copy the project, install requirements, and run the Flask app behind a production WSGI server such as Gunicorn. Do not expose Flask debug mode to the public internet.
+For deployment, use an IAM role with least-privilege permissions. Keep S3 buckets private and never publish AWS access keys or secret credentials.
 
-For a quick demonstration, local mode is sufficient; clearly label it as a local prototype until AWS resources are actually connected.
+## 3. System Architecture
 
-## 4. SageMaker extension (optional)
+The application follows a cloud-integrated architecture in which the Flask web application communicates with AWS services.
 
-The current project uses a transparent keyword-based sentiment classifier in Lambda. SageMaker is not required for the core demo. For an advanced ML version, deploy a text-classification model to a SageMaker real-time endpoint and have Lambda call `sagemaker-runtime:InvokeEndpoint`. This can incur charges, so do not deploy an endpoint just for a short demo unless your instructor/company specifically requires it.
+### Workflow
 
-## Architecture
-
-Student browser -> Flask application on EC2 -> AWS Lambda (sentiment analysis)
-                                          -> DynamoDB (structured feedback)
-                                          -> S3 (JSON feedback archive)
-
-## Important project explanation
-
-This is a prototype. The included classifier is a simple keyword-based demonstration, not a trained AI model. SageMaker is an optional extension and should not be claimed as implemented unless you deploy and test an endpoint.
+Student Browser  
+↓  
+Flask Web
